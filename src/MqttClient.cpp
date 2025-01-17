@@ -1,64 +1,49 @@
 #include "MqttClient.h"
-#include <iostream>
+#include <chrono>
 
 MqttClient::MqttClient(const std::string& serverAddress, const std::string& clientId)
-    : client(serverAddress, clientId), cb() {
+    : client(serverAddress, clientId), running(false) {
     client.set_callback(cb);
 }
 
 void MqttClient::connect(const std::string& username, const std::string& password) {
     mqtt::connect_options connOpts;
-    connOpts.set_clean_session(true);
     connOpts.set_user_name(username);
     connOpts.set_password(password);
-
-    try {
-        std::cout << "Connecting to the MQTT server..." << std::endl;
-        client.connect(connOpts)->wait();
-        std::cout << "Connected." << std::endl;
-    }
-    catch (const mqtt::exception& exc) {
-        std::cerr << exc.what() << std::endl;
-        throw;
-    }
+    client.connect(connOpts)->wait();
 }
 
 void MqttClient::subscribe(const std::string& topic, int qos) {
-    try {
-        std::cout << "Subscribing to topic: " << topic << std::endl;
-        client.subscribe(topic, qos)->wait();
-        std::cout << "Subscribed." << std::endl;
-    }
-    catch (const mqtt::exception& exc) {
-        std::cerr << exc.what() << std::endl;
-        throw;
-    }
+    client.subscribe(topic, qos)->wait();
 }
 
 void MqttClient::publish(const std::string& topic, const std::string& payload, int qos) {
-    try {
-        std::cout << "Publishing message: " << payload << std::endl;
-        client.publish(topic, payload.c_str(), payload.size(), qos, false)->wait();
-        std::cout << "Message published." << std::endl;
-    }
-    catch (const mqtt::exception& exc) {
-        std::cerr << exc.what() << std::endl;
-        throw;
-    }
+    client.publish(topic, payload.c_str(), payload.size(), qos, false)->wait();
 }
 
 void MqttClient::disconnect() {
-    try {
-        std::cout << "Disconnecting from the MQTT server..." << std::endl;
-        client.disconnect()->wait();
-        std::cout << "Disconnected." << std::endl;
+    client.disconnect()->wait();
+}
+
+void MqttClient::startPeriodicPublish(const std::string& topic, const std::string& payload, int qos, int interval) {
+    running = true;
+    publishThread = std::thread(&MqttClient::periodicPublish, this, topic, payload, qos, interval);
+}
+
+void MqttClient::stopPeriodicPublish() {
+    running = false;
+    if (publishThread.joinable()) {
+        publishThread.join();
     }
-    catch (const mqtt::exception& exc) {
-        std::cerr << exc.what() << std::endl;
-        throw;
+}
+
+void MqttClient::periodicPublish(const std::string& topic, const std::string& payload, int qos, int interval) {
+    while (running) {
+        publish(topic, payload, qos);
+        std::this_thread::sleep_for(std::chrono::seconds(interval));
     }
 }
 
 void MqttClient::callback::message_arrived(mqtt::const_message_ptr msg) {
-    std::cout << "Message arrived: " << msg->to_string() << std::endl;
+    std::cout << "Message arrived: " << msg->get_payload_str() << std::endl;
 }
