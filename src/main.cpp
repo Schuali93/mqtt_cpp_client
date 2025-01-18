@@ -9,6 +9,7 @@ const std::string TOPIC("test/topic");
 const int QOS = 1;
 
 int main() {
+    
     MqttClient mqttClient(SERVER_ADDRESS, CLIENT_ID);
 
     try {
@@ -23,6 +24,7 @@ int main() {
 
         // Stop periodic publishing
         mqttClient.stopPeriodicPublish();
+        std::cout << "Stopped periodic publishing" << std::endl;
 
         mqttClient.disconnect();
     }

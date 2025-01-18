@@ -46,3 +46,14 @@ void MqttClient::stopPeriodicPublish() {
         publishThread.join();
     }
 }
+
+void MqttClient::periodicPublish(const std::string& topic, const std::string& payload, int qos, int interval) {
+    while (running) {
+        publish(topic, payload, qos);
+        std::this_thread::sleep_for(std::chrono::seconds(interval));
+    }
+}
+
+void MqttClient::callback::message_arrived(mqtt::const_message_ptr msg) {
+    std::cout << "Message arrived: " << msg->get_payload_str() << std::endl;
+}
