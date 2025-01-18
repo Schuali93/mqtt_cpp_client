@@ -40,21 +40,21 @@ nlohmann::json SystemInfoPublisher::readSystemInfo() {
     info["totalram"] = sysInfo.totalram;
     info["freeram"] = sysInfo.freeram;
     info["procs"] = sysInfo.procs;
-    info["fan_speed"] = getFanSpeed(); // Add fan speed to the JSON object
+    info["cpu_temp"] = getCpuTemp(); // Add fan speed to the JSON object
 
     return info;
 }
 
-int SystemInfoPublisher::getFanSpeed() {
+double SystemInfoPublisher::getCpuTemp() {
     std::array<char, 128> buffer;
     std::string result;
-    std::shared_ptr<FILE> pipe(popen("sensors | grep 'fan' | awk '{print $2}'", "r"), pclose);
+    std::shared_ptr<FILE> pipe(popen("sensors | grep 'temp' | awk '{print $2}'", "r"), pclose);
     if (!pipe) throw std::runtime_error("popen() failed!");
     while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
         result += buffer.data();
     }
     std::istringstream iss(result);
-    int fanSpeed;
-    iss >> fanSpeed;
-    return fanSpeed;
+    double cpuTemp;
+    iss >> cpuTemp;
+    return cpuTemp;
 }

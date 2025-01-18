@@ -36,7 +36,7 @@ private:
      */
     nlohmann::json readSystemInfo();
 
-    int getFanSpeed();
+    double getCpuTemp();
 
 };
 
