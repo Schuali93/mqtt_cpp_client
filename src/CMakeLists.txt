@@ -14,5 +14,5 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(json)
 
-add_executable(mqtt_client main.cpp MqttClient.cpp)
+add_executable(mqtt_client main.cpp MqttClient.cpp SystemInfoPublisher.cpp)
 target_link_libraries(mqtt_client PRIVATE paho-mqttpp3 paho-mqtt3as nlohmann_json::nlohmann_json)

@@ -3,12 +3,12 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
-#include "MqttClient.h"
+#include "SystemInfoPublisher.h"
 #include <nlohmann/json.hpp>
 
 const std::string SERVER_ADDRESS("tcp://homeassistant.local:1883");
 const std::string CLIENT_ID("paho_cpp_async_publish");
-const std::string TOPIC("test/topic");
+const std::string TOPIC("system/info");
 
 const int QOS = 0;
 
@@ -23,27 +23,27 @@ std::string getCurrentTime() {
 }
 
 int main() {
-    MqttClient mqttClient(SERVER_ADDRESS, CLIENT_ID);
+    SystemInfoPublisher systemInfoPublisher(SERVER_ADDRESS, CLIENT_ID);
 
     try {
-        mqttClient.connect("mqtt-user", "mqtt-user");
-        mqttClient.subscribe(TOPIC, QOS);
+        systemInfoPublisher.connect("mqtt-user", "mqtt-user");
+        systemInfoPublisher.subscribe(TOPIC, QOS);
 
-        // Create a JSON payload
-        nlohmann::json payload;
-        payload["message"] = "Hello MQTT";
-        payload["timestamp"] = getCurrentTime();
+        // Start publishing system information every 5 seconds
+        systemInfoPublisher.startPublishing(TOPIC, 5);
 
-        // Start periodic publishing with JSON payload
-        mqttClient.startPeriodicPublish(TOPIC, payload, QOS, 5);
+        while (true)
+        {
+            if (std::cin.get() != EOF) 
+            {
+                std::cout << "Exiting..." << std::endl;
+                break;
+            }
+        }
+        // Stop publishing system information
+        systemInfoPublisher.stopPublishing();
 
-        // Let it run for 30 seconds
-        std::this_thread::sleep_for(std::chrono::seconds(30));
-
-        // Stop periodic publishing
-        mqttClient.stopPeriodicPublish();
-
-        mqttClient.disconnect();
+        systemInfoPublisher.disconnect();
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

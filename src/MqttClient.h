@@ -26,6 +26,8 @@ public:
      */
     MqttClient(const std::string& serverAddress, const std::string& clientId);
 
+    virtual ~MqttClient() {}; // Add virtual destructor
+
     /**
      * Connects to the MQTT server with the provided username and password.
      * @param username The username for authentication.
@@ -53,29 +55,14 @@ public:
      */
     void disconnect();
 
-    /**
-     * Starts a thread to periodically publish messages to a topic.
-     * @param topic The topic to publish to.
-     * @param payload The message payload in JSON format.
-     * @param qos The Quality of Service level.
-     * @param interval The interval in seconds between each publish.
-     */
-    void startPeriodicPublish(const std::string& topic, const nlohmann::json& payload, int qos, int interval);
+    virtual void startPublishing(const std::string& topic, int interval);
 
     /**
      * Stops the periodic publishing thread.
      */
-    void stopPeriodicPublish();
+    void stopPublishing();
 
-private:
-    /**
-     * The function that runs in a separate thread to periodically publish messages.
-     * @param topic The topic to publish to.
-     * @param payload The message payload in JSON format.
-     * @param qos The Quality of Service level.
-     * @param interval The interval in seconds between each publish.
-     */
-    void periodicPublish(const std::string& topic, const nlohmann::json& payload, int qos, int interval);
+protected:
 
     class callback : public virtual mqtt::callback {
     public:
@@ -86,10 +73,10 @@ private:
         void message_arrived(mqtt::const_message_ptr msg) override;
     };
 
-    mqtt::async_client client; ///< The MQTT asynchronous client.
-    callback cb; ///< The callback handler for the MQTT client.
-    std::thread publishThread; ///< The thread for periodic publishing.
-    std::atomic<bool> running; ///< Atomic flag to control the periodic publishing thread.
+    mqtt::async_client client;
+    std::thread publishThread;
+    std::atomic<bool> running;
+    callback cb;
 };
 
 #endif // MQTTCLIENT_H

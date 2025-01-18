@@ -36,22 +36,15 @@ void MqttClient::disconnect() {
     client.disconnect()->wait();
 }
 
-void MqttClient::startPeriodicPublish(const std::string& topic, const nlohmann::json& payload, int qos, int interval) {
-    running = true;
-    publishThread = std::thread(&MqttClient::periodicPublish, this, topic, payload, qos, interval);
+void MqttClient::startPublishing(const std::string& topic, int interval)
+{
+    // empty
 }
 
-void MqttClient::stopPeriodicPublish() {
+void MqttClient::stopPublishing() {
     running = false;
     if (publishThread.joinable()) {
         publishThread.join();
-    }
-}
-
-void MqttClient::periodicPublish(const std::string& topic, const nlohmann::json& payload, int qos, int interval) {
-    while (running) {
-        publish(topic, payload, qos);
-        std::this_thread::sleep_for(std::chrono::seconds(interval));
     }
 }
 
