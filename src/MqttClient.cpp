@@ -1,3 +1,13 @@
+/*
+ * MqttClient.cpp
+ * 
+ * Implementation of the MqttClient class for connecting, subscribing, publishing,
+ * and periodically publishing messages to an MQTT broker.
+ * 
+ * Author: schuali93
+ * Date: 18.01.25
+ */
+
 #include "MqttClient.h"
 #include <chrono>
 
@@ -35,15 +45,4 @@ void MqttClient::stopPeriodicPublish() {
     if (publishThread.joinable()) {
         publishThread.join();
     }
-}
-
-void MqttClient::periodicPublish(const std::string& topic, const std::string& payload, int qos, int interval) {
-    while (running) {
-        publish(topic, payload, qos);
-        std::this_thread::sleep_for(std::chrono::seconds(interval));
-    }
-}
-
-void MqttClient::callback::message_arrived(mqtt::const_message_ptr msg) {
-    std::cout << "Message arrived: " << msg->get_payload_str() << std::endl;
 }
