@@ -27,15 +27,16 @@ void MqttClient::subscribe(const std::string& topic, int qos) {
     client.subscribe(topic, qos)->wait();
 }
 
-void MqttClient::publish(const std::string& topic, const std::string& payload, int qos) {
-    client.publish(topic, payload.c_str(), payload.size(), qos, false)->wait();
+void MqttClient::publish(const std::string& topic, const nlohmann::json& payload, int qos) {
+    std::string payloadStr = payload.dump();
+    client.publish(topic, payloadStr.c_str(), payloadStr.size(), qos, false)->wait();
 }
 
 void MqttClient::disconnect() {
     client.disconnect()->wait();
 }
 
-void MqttClient::startPeriodicPublish(const std::string& topic, const std::string& payload, int qos, int interval) {
+void MqttClient::startPeriodicPublish(const std::string& topic, const nlohmann::json& payload, int qos, int interval) {
     running = true;
     publishThread = std::thread(&MqttClient::periodicPublish, this, topic, payload, qos, interval);
 }
@@ -47,7 +48,7 @@ void MqttClient::stopPeriodicPublish() {
     }
 }
 
-void MqttClient::periodicPublish(const std::string& topic, const std::string& payload, int qos, int interval) {
+void MqttClient::periodicPublish(const std::string& topic, const nlohmann::json& payload, int qos, int interval) {
     while (running) {
         publish(topic, payload, qos);
         std::this_thread::sleep_for(std::chrono::seconds(interval));

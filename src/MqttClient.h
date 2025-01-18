@@ -15,6 +15,7 @@
 #include <thread>
 #include <atomic>
 #include <mqtt/async_client.h>
+#include <nlohmann/json.hpp>
 
 class MqttClient {
 public:
@@ -42,10 +43,10 @@ public:
     /**
      * Publishes a message to a topic with the specified payload and QoS level.
      * @param topic The topic to publish to.
-     * @param payload The message payload.
+     * @param payload The message payload in JSON format.
      * @param qos The Quality of Service level.
      */
-    void publish(const std::string& topic, const std::string& payload, int qos);
+    void publish(const std::string& topic, const nlohmann::json& payload, int qos);
 
     /**
      * Disconnects from the MQTT server.
@@ -55,11 +56,11 @@ public:
     /**
      * Starts a thread to periodically publish messages to a topic.
      * @param topic The topic to publish to.
-     * @param payload The message payload.
+     * @param payload The message payload in JSON format.
      * @param qos The Quality of Service level.
      * @param interval The interval in seconds between each publish.
      */
-    void startPeriodicPublish(const std::string& topic, const std::string& payload, int qos, int interval);
+    void startPeriodicPublish(const std::string& topic, const nlohmann::json& payload, int qos, int interval);
 
     /**
      * Stops the periodic publishing thread.
@@ -70,11 +71,11 @@ private:
     /**
      * The function that runs in a separate thread to periodically publish messages.
      * @param topic The topic to publish to.
-     * @param payload The message payload.
+     * @param payload The message payload in JSON format.
      * @param qos The Quality of Service level.
      * @param interval The interval in seconds between each publish.
      */
-    void periodicPublish(const std::string& topic, const std::string& payload, int qos, int interval);
+    void periodicPublish(const std::string& topic, const nlohmann::json& payload, int qos, int interval);
 
     class callback : public virtual mqtt::callback {
     public:
